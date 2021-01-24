@@ -75,6 +75,10 @@ def generate_art(
     return color((pcent * "#") + ((length-pcent) * "."), bold=True)
 
 
+def get_empty_space(header, cols, art):
+    return " " * int(((int(cols) - len(header)) - len(art)) - 2)
+
+
 rows, cols = os.popen('stty size', 'r').read().split()
 rows = int(rows)
 cols = int(cols)
@@ -83,17 +87,24 @@ print("\n- Disk -\n--------\n")
 for d in disks:
     percentage_amt = int(disks[d].strip("%"))
     art = generate_art(percentage_amt, term_columns=cols)
-    empty_space = (int(cols) - len(d)) - len(art)
-    print(d, " " * (empty_space-2), art)
+    empty_space = get_empty_space(d, cols, art)
+    print(d, empty_space, art)
 
 print("\n- Network -\n-----------")
-print(f"SSID: {ssid}")
-print(f"Speed: {network_speed}")
+ssid_header = "SSID:"
+empty = get_empty_space(ssid_header, cols, art)
+print(ssid_header, empty, ssid)
+
+network_speed_header = "Speed:"
+empty = get_empty_space(network_speed_header, cols, art)
+print(network_speed_header, empty, network_speed)
 
 print("\n- Battery -\n-----------")
 battery_art = generate_art(battery_capacity, term_columns=cols, invert_colors=True)
 battery_header = "Battery Power:"
-empty_space = (int(cols) - len(battery_header)) - len(art)
-print(battery_header, " " * (empty_space - 2), battery_art)
-print(f"Battery Status: {battery_status}")
+empty = get_empty_space(battery_header, cols, art)
+print(battery_header, empty, battery_art)
+battery_status_header = "Battery Status:"
+empty = get_empty_space(battery_status_header, cols, art)
+print(battery_status_header, empty, battery_status)
 print()
