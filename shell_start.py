@@ -4,17 +4,30 @@ from subprocess import check_output
 
 import crayons
 
+BATTERY_PATH = "/sys/class/power_supply/cw2015-battery/"
+
 ssid = [
     line.strip("\t") for line in check_output(["iw", "dev"]).decode().splitlines()
         if "ssid" in line
 ][0][5:]
 
+network_speed = [
+    line.strip().split("   ")[0].split("=")[1] for line in check_output(
+        ["iwconfig", "wlan0"]
+    ).decode().splitlines() if "Bit Rate" in line
+][0]
+
 battery_capacity = int(check_output(
-    ["cat", "/sys/class/power_supply/cw2015-battery/capacity"]
+    ["cat", os.path.join(BATTERY_PATH, "capacity")]
 ).decode())
-battery_health = check_output(
-    ["cat", "/sys/class/power_supply/cw2015-battery/health"]
-).decode()
+
+battery_status = check_output(
+    ["cat", os.path.join(BATTERY_PATH, "status")]
+).decode().strip()
+if battery_status == "Charging":
+    battery_status = crayons.green(battery_status, bold=True)
+else:
+    battery_status = crayons.yellow(battery_status, bold=True)
 
 disk_capacity_raw = check_output(
     ["df", "-l", "--output=source,pcent"]
@@ -22,6 +35,8 @@ disk_capacity_raw = check_output(
 disks = {line.split()[0]: line.split()[1] for line in disk_capacity_raw}
 for disk in list(disks.keys()):
     if not disk.startswith("/dev/"):
+        del disks[disk]
+    if "loop" in disk or "zram" in disk:
         del disks[disk]
 
 
@@ -34,7 +49,7 @@ def generate_art(
     """
     Generate a colored progress bar of octothorpes and periods.
 
-    :param percentage: integer between 1 and 100. 
+    :param percentage: integer between 1 and 100.
     :param length: how many characters to draw with; overridden if cols is passed in
     :param term_columns: the width of the terminal window; this overrides length
     :return: the fancy-ass bar
@@ -73,10 +88,12 @@ for d in disks:
 
 print("\n- Network -\n-----------")
 print(f"SSID: {ssid}")
+print(f"Speed: {network_speed}")
 
 print("\n- Battery -\n-----------")
 battery_art = generate_art(battery_capacity, term_columns=cols, invert_colors=True)
 battery_header = "Battery Power:"
 empty_space = (int(cols) - len(battery_header)) - len(art)
 print(battery_header, " " * (empty_space - 2), battery_art)
-print(f"Battery Health: {battery_health}\n")
+print(f"Battery Status: {battery_status}")
+print()
