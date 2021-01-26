@@ -24,7 +24,7 @@ battery_capacity = int(check_output(
 battery_status = check_output(
     ["cat", os.path.join(BATTERY_PATH, "status")]
 ).decode().strip()
-if battery_status == "Charging":
+if battery_status == "Charging" or battery_status == "Full":
     battery_status = crayons.green(battery_status, bold=True)
 else:
     battery_status = crayons.yellow(battery_status, bold=True)
