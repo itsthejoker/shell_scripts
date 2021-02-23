@@ -83,7 +83,7 @@ rows, cols = os.popen('stty size', 'r').read().split()
 rows = int(rows)
 cols = int(cols)
 
-print("\n- Disk -\n--------\n")
+print("\n- Disk -\n--------")
 for d in disks:
     percentage_amt = int(disks[d].strip("%"))
     art = generate_art(percentage_amt, term_columns=cols)
@@ -97,7 +97,7 @@ print(ssid_header, empty, ssid)
 
 network_speed_header = "Speed:"
 empty = get_empty_space(network_speed_header, cols, art)
-print(network_speed_header, empty, network_speed)
+print(network_speed_header, empty, network_speed + "-ish")
 
 print("\n- Battery -\n-----------")
 battery_art = generate_art(battery_capacity, term_columns=cols, invert_colors=True)
