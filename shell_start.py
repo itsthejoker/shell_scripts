@@ -6,16 +6,20 @@ import crayons
 
 BATTERY_PATH = "/sys/class/power_supply/cw2015-battery/"
 
-ssid = [
-    line.strip("\t") for line in check_output(["iw", "dev"]).decode().splitlines()
-        if "ssid" in line
-][0][5:]
+try:
+    ssid = [
+        line.strip("\t") for line in check_output(["iw", "dev"]).decode().splitlines()
+            if "ssid" in line
+    ][0][5:]
 
-network_speed = [
-    line.strip().split("   ")[0].split("=")[1] for line in check_output(
-        ["iwconfig", "wlan0"]
-    ).decode().splitlines() if "Bit Rate" in line
-][0]
+    network_speed = [
+        line.strip().split("   ")[0].split("=")[1] for line in check_output(
+            ["iwconfig", "wlan0"]
+        ).decode().splitlines() if "Bit Rate" in line
+    ][0] + "-ish"
+except IndexError:
+    ssid = "Not Connected"
+    network_speed = "N/A"
 
 battery_capacity = int(check_output(
     ["cat", os.path.join(BATTERY_PATH, "capacity")]
@@ -97,7 +101,7 @@ print(ssid_header, empty, ssid)
 
 network_speed_header = "Speed:"
 empty = get_empty_space(network_speed_header, cols, art)
-print(network_speed_header, empty, network_speed + "-ish")
+print(network_speed_header, empty, network_speed)
 
 print("\n- Battery -\n-----------")
 battery_art = generate_art(battery_capacity, term_columns=cols, invert_colors=True)
